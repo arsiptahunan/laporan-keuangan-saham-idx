@@ -1,0 +1,522 @@
+<!doctype html>
+<html lang="id">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="description" content="Laporan keuangan 56 emiten BEI terbesar: pendapatan, laba bersih, PER, PBV, ROE, dan dividen yield. Edisi publik Arsip Tahunan — data Yahoo Finance per 25 November 2026." />
+    <link rel="icon" href="data:," />
+    <title>Laporan Keuangan Saham IDX — Edisi Publik</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        --bg: #edf2f5;
+        --surface: #ffffff;
+        --text: #16241d;
+        --dim: #5c6f66;
+        --border: #d9e4de;
+        --accent: #07754d;
+        --accent-bright: #0a8a5c;
+        --accent-tint: #e3f2ec;
+        --chart2: #40536b;
+        --danger: #b3372f;
+        --warn-bg: #fdf3e3;
+        --warn-text: #7a5410;
+        --warn-border: #ecd9ac;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #0e1512;
+          --surface: #182019;
+          --text: #e8f0ec;
+          --dim: #93a89d;
+          --border: #2a3a31;
+          --accent: #2fbf8f;
+          --accent-bright: #35cf9c;
+          --accent-tint: #16352a;
+          --chart2: #8fa8c4;
+          --danger: #e0685f;
+          --warn-bg: #3a2f14;
+          --warn-text: #ecd9ac;
+          --warn-border: #6b5a26;
+        }
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      .wrap { max-width: 1152px; margin: 0 auto; padding: 16px 12px 40px; }
+      @media (min-width: 640px) { .wrap { padding: 16px 20px 40px; } }
+      h1 { font-size: 20px; line-height: 1.25; margin: 0; font-weight: 700; }
+      @media (min-width: 640px) { h1 { font-size: 24px; } }
+      .sub { margin-top: 4px; font-size: 14px; color: var(--dim); }
+      .snapshot-note {
+        margin-top: 12px; border-radius: 10px; padding: 10px 12px; font-size: 13.5px; line-height: 1.5;
+        background: var(--accent-tint); border: 1px solid var(--border); color: var(--text);
+      }
+      .snapshot-note strong { color: var(--accent); }
+
+      /* Sorotan */
+      .highlights { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 20px; }
+      @media (min-width: 1100px) { .highlights { grid-template-columns: repeat(4, 1fr); } }
+      .hl-card {
+        background: var(--surface); border: 1px solid var(--border); border-top: 3px solid var(--accent-bright);
+        border-radius: 12px; padding: 16px;
+      }
+      .hl-label { font-size: 12px; font-weight: 600; letter-spacing: .04em; color: var(--dim); margin: 0; }
+      .hl-value { margin: 8px 0 0; font-size: 24px; font-weight: 700; color: var(--accent); font-variant-numeric: tabular-nums; }
+      .hl-sym { margin: 4px 0 0; font-size: 14px; font-weight: 600; }
+      .hl-name { margin: 0; font-size: 12px; color: var(--dim); }
+
+      /* Pencarian */
+      .search-row { margin-top: 20px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+      .search-row input {
+        width: 100%; max-width: 448px; border-radius: 8px; padding: 8px 12px; font-size: 14px;
+        background: var(--surface); border: 1px solid var(--border); color: var(--text);
+      }
+      .search-row p { font-size: 14px; color: var(--dim); margin: 0; }
+
+      /* Tabel desktop */
+      .table-box { margin-top: 12px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow-x: auto; }
+      table { width: 100%; border-collapse: collapse; font-size: 14px; min-width: 860px; }
+      thead tr { border-bottom: 2px solid var(--border); }
+      th { padding: 10px 12px; font-weight: 600; color: var(--dim); text-align: right; white-space: nowrap; }
+      th:first-child { text-align: left; }
+      th button {
+        display: inline-flex; align-items: center; gap: 4px; font: inherit; font-weight: 600; cursor: pointer;
+        background: none; border: none; padding: 4px 2px; color: var(--dim);
+      }
+      th button.active { color: var(--accent); }
+      th .hint { display: block; font-size: 10px; font-weight: 400; }
+      tbody tr.data-row { border-bottom: 1px solid var(--border); cursor: pointer; }
+      tbody tr.data-row:hover { background: var(--accent-tint); }
+      tbody tr.data-row.open { background: var(--accent-tint); }
+      td { padding: 10px 12px; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; }
+      td:first-child { text-align: left; white-space: normal; }
+      td.na { color: var(--dim); font-size: 11px; }
+      td.neg { color: var(--danger); }
+      .sym-btn { background: none; border: none; padding: 0; text-align: left; cursor: pointer; font: inherit; color: inherit; min-height: 0; }
+      .sym { font-weight: 700; color: var(--accent); }
+      .co-name { display: block; font-size: 12px; color: var(--dim); }
+
+      /* Detail */
+      .detail { background: var(--accent-tint); padding: 16px; text-align: left; white-space: normal; }
+      .detail h3 { margin: 0; font-size: 14px; font-weight: 600; }
+      .detail-grid { margin-top: 12px; display: grid; gap: 16px; }
+      @media (min-width: 1024px) { .detail-grid { grid-template-columns: 1fr 1fr; } }
+      .chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 12px; }
+      .chart-title { font-size: 12px; font-weight: 600; letter-spacing: .03em; color: var(--dim); margin: 0 0 8px; }
+      .legend { display: flex; gap: 16px; font-size: 12px; margin-top: 6px; color: var(--dim); }
+      .legend span::before { content: ""; display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+      .legend .l1::before { background: var(--accent-bright); }
+      .legend .l2::before { background: var(--chart2); }
+      .ratio-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; align-content: start; margin: 0; }
+      @media (min-width: 640px) { .ratio-grid { grid-template-columns: repeat(3, 1fr); } }
+      @media (min-width: 1024px) { .ratio-grid { grid-template-columns: 1fr 1fr; } }
+      @media (min-width: 1280px) { .ratio-grid { grid-template-columns: repeat(3, 1fr); } }
+      .ratio-grid dt { font-size: 11px; line-height: 1.3; color: var(--dim); }
+      .ratio-grid dd { margin: 0; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; }
+      .ratio-grid dd.na { color: var(--dim); font-weight: 400; font-size: 12px; }
+      .na-note { font-size: 14px; color: var(--dim); margin-top: 12px; }
+
+      /* Kartu ponsel */
+      .cards { display: grid; gap: 12px; margin-top: 12px; }
+      .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+      .card > button { display: block; width: 100%; padding: 12px 16px; text-align: left; background: none; border: none; cursor: pointer; font: inherit; color: inherit; }
+      .card-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+      .card-price { text-align: right; }
+      .card-price .p { font-weight: 700; font-variant-numeric: tabular-nums; }
+      .card-price .c { display: block; font-size: 12px; font-variant-numeric: tabular-nums; }
+      .pos { color: var(--accent); } .neg { color: var(--danger); }
+      .card-metrics { margin-top: 12px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px 12px; }
+      .card-metrics .lbl { display: block; font-size: 10px; color: var(--dim); }
+      .card-metrics .val { display: block; font-weight: 600; font-size: 14px; font-variant-numeric: tabular-nums; }
+      .card-metrics .val.na { color: var(--dim); font-weight: 400; font-size: 10px; }
+      .card-toggle { margin-top: 8px; display: block; font-size: 12px; font-weight: 500; color: var(--accent); }
+      .empty { padding: 24px 0; text-align: center; font-size: 14px; color: var(--dim); }
+
+      /* Penjelasan */
+      .explain { margin-top: 24px; background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+      @media (min-width: 640px) { .explain { padding: 20px; } }
+      .explain h2 { font-size: 16px; margin: 0; }
+      .explain dl { margin: 12px 0 0; display: grid; gap: 12px; }
+      @media (min-width: 640px) { .explain dl { grid-template-columns: 1fr 1fr; } }
+      .explain dt { font-size: 14px; font-weight: 600; color: var(--accent); }
+      .explain dd { margin: 2px 0 0; font-size: 14px; line-height: 1.55; color: var(--dim); }
+      .warn { margin-top: 16px; border-radius: 8px; padding: 10px 12px; font-size: 14px; line-height: 1.55; background: var(--warn-bg); color: var(--warn-text); border: 1px solid var(--warn-border); }
+      footer { margin-top: 24px; font-size: 12px; line-height: 1.6; color: var(--dim); }
+      footer .disc { margin-top: 8px; font-weight: 600; color: var(--text); font-size: 12px; }
+      .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+      .desktop-only { display: none; }
+      @media (min-width: 768px) {
+        .desktop-only { display: block; }
+        .mobile-only { display: none; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <header>
+        <h1>Laporan Keuangan 56 Emiten BEI Terbesar</h1>
+        <p class="sub" id="edition-line"></p>
+        <p class="snapshot-note">
+          <strong>Edisi publik — data per tanggal di atas.</strong>
+          Halaman ini adalah salinan tetap (snapshot) dari dashboard Laporan
+          Keuangan Saham IDX untuk arsip publik Arsip Tahunan. Angkanya tidak
+          berubah sendiri; edisi baru diterbitkan sebagai halaman baru.
+        </p>
+      </header>
+
+      <section aria-label="Sorotan">
+        <div class="highlights" id="highlights"></div>
+      </section>
+
+      <div class="search-row">
+        <label class="sr-only" for="search-input">Cari emiten</label>
+        <input id="search-input" type="search" placeholder="Cari emiten — mis. BBCA, Telkom, Astra…" autocomplete="off" />
+        <p id="count-line"></p>
+      </div>
+
+      <div class="table-box desktop-only">
+        <table>
+          <thead><tr id="thead-row"></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="cards mobile-only" id="cards"></div>
+      <p class="empty" id="empty-msg" hidden>Tidak ada emiten yang cocok dengan pencarian.</p>
+
+      <section class="explain" aria-label="Penjelasan rasio">
+        <h2>Cara Membaca Rasio-Rasio Ini</h2>
+        <dl>
+          <div>
+            <dt>PER (Price to Earnings)</dt>
+            <dd>Harga saham dibagi laba per saham setahun terakhir. Menunjukkan berapa rupiah yang dibayar investor untuk setiap Rp1 laba perusahaan.</dd>
+          </div>
+          <div>
+            <dt>PBV (Price to Book Value)</dt>
+            <dd>Harga saham dibagi nilai buku (ekuitas) per saham. Di atas 1x berarti pasar menilai perusahaan lebih tinggi dari nilai bukunya.</dd>
+          </div>
+          <div>
+            <dt>ROE (Return on Equity)</dt>
+            <dd>Laba bersih dibagi ekuitas, dalam persen. Mengukur seberapa efisien modal pemegang saham menghasilkan laba.</dd>
+          </div>
+          <div>
+            <dt>Dividen yield</dt>
+            <dd>Dividen setahun terakhir dibagi harga saham, dalam persen. Imbal hasil tunai dari dividen saja, belum termasuk perubahan harga.</dd>
+          </div>
+          <div>
+            <dt>Pendapatan &amp; laba bersih (TTM)</dt>
+            <dd>Total dua belas bulan terakhir (trailing twelve months). Pendapatan adalah penjualan kotor; laba bersih adalah sisa setelah semua biaya, bunga, dan pajak.</dd>
+          </div>
+          <div>
+            <dt>Pertumbuhan (YoY)</dt>
+            <dd>Perubahan pendapatan atau laba dibanding periode yang sama tahun sebelumnya, menurut hitungan Yahoo Finance.</dd>
+          </div>
+        </dl>
+        <p class="warn">
+          <strong>Peringatan:</strong> rasio yang terlihat murah bukan otomatis
+          sinyal beli. PER rendah bisa berarti laba sedang berada di puncak
+          siklus, atau harga jatuh karena ada masalah pada fundamental
+          perusahaan. Selalu periksa tren laba beberapa kuartal, utang, dan
+          arus kas sebelum mengambil keputusan.
+        </p>
+      </section>
+
+      <footer>
+        <p id="methodology"></p>
+        <p class="disc">Halaman ini hanya menyajikan data — bukan saran investasi.</p>
+      </footer>
+    </main>
+
+    <script>
+      var DATA = {"stocks":[{"symbol":"BBCA","name":"Bank Central Asia","price":5825,"changePct":0.4310345,"marketCap":715553228455936,"revenueTtm":111352060313600,"netIncomeTtm":59355699000000,"per":12.060041,"pbv":2.524715118947673,"roe":21.199,"dividendYield":6.569999999999999,"revenueGrowth":7.7,"earningsGrowth":9.5,"eps":483,"profitMargin":53.305,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":25984468000000,"netIncome":14139872000000},{"period":"Q1 2026","revenue":27901529000000,"netIncome":14684123000000},{"period":"Q2 2026","revenue":28157061000000,"netIncome":14850323000000},{"period":"Q3 2026","revenue":29575610000000,"netIncome":15681381000000}]},{"symbol":"BBRI","name":"Bank Rakyat Indonesia","price":3070,"changePct":-0.9677418999999999,"marketCap":462569588391936,"revenueTtm":148630900047872,"netIncomeTtm":null,"per":7.2748814,"pbv":1.365077233579833,"roe":18.742001,"dividendYield":13.48,"revenueGrowth":5,"earningsGrowth":15.9,"eps":422,"profitMargin":42.765,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":75365417000000,"netIncome":15873574000000},{"period":"Q1 2026","revenue":85702091000000,"netIncome":null},{"period":"Q2 2026","revenue":68253161000000,"netIncome":null},{"period":"Q3 2026","revenue":52091000000000,"netIncome":16824000000000}]},{"symbol":"BMRI","name":"Bank Mandiri","price":4000,"changePct":0.25062656,"marketCap":373333321318400,"revenueTtm":139843136913408,"netIncomeTtm":64097621000000,"per":5.821484,"pbv":1.2696623079159637,"roe":21.757999,"dividendYield":13.61,"revenueGrowth":-10.299999999999999,"earningsGrowth":13.900000000000002,"eps":687.11,"profitMargin":45.836,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":43512134000000,"netIncome":18563808000000},{"period":"Q1 2026","revenue":36318000000000,"netIncome":15384131000000},{"period":"Q2 2026","revenue":34505000000000,"netIncome":15028000000000},{"period":"Q3 2026","revenue":null,"netIncome":15121682000000}]},{"symbol":"TLKM","name":"Telkom Indonesia","price":2010,"changePct":-3.3653848,"marketCap":197920364167168,"revenueTtm":150627002875904,"netIncomeTtm":16969000000000,"per":12.319196,"pbv":1.6183718213285303,"roe":16.298000000000002,"dividendYield":10.73,"revenueGrowth":2.8000000000000003,"earningsGrowth":-15.7,"eps":163.16,"profitMargin":11.4379995,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":37125000000000,"netIncome":2030000000000},{"period":"Q1 2026","revenue":null,"netIncome":4344000000000},{"period":"Q2 2026","revenue":38689000000000,"netIncome":6772000000000},{"period":"Q3 2026","revenue":37624000000000,"netIncome":3823000000000}]},{"symbol":"ASII","name":"Astra International","price":5550,"changePct":1.8348623000000002,"marketCap":220266173038592,"revenueTtm":323652998397952,"netIncomeTtm":29898000000000,"per":7.439678,"pbv":0.9250877291529814,"roe":11.630999000000001,"dividendYield":7.16,"revenueGrowth":6.4,"earningsGrowth":3.2,"eps":746,"profitMargin":9.238,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":79784000000000,"netIncome":8296000000000},{"period":"Q1 2026","revenue":78668000000000,"netIncome":5850000000000},{"period":"Q2 2026","revenue":79245000000000,"netIncome":6683000000000},{"period":"Q3 2026","revenue":null,"netIncome":9069000000000}]},{"symbol":"ADMR","name":"Adaro Minerals Indonesia","price":1110,"changePct":-2.202643,"marketCap":45379387129856,"revenueTtm":28383980809728,"netIncomeTtm":7038586854570,"per":6.845936,"pbv":1.4103673435159316,"roe":23.07,"dividendYield":4.46,"revenueGrowth":189.39999999999998,"earningsGrowth":125.2,"eps":162.14,"profitMargin":24.798000000000002,"financialCurrency":"USD","quarters":[{"period":"Q4 2025","revenue":null,"netIncome":1226816961570},{"period":"Q1 2026","revenue":null,"netIncome":1605319524000},{"period":"Q2 2026","revenue":5790831261000,"netIncome":1582642107000},{"period":"Q3 2026","revenue":12246555603000,"netIncome":2623808262000}]},{"symbol":"ADRO","name":"Adaro Energy Indonesia","price":2330,"changePct":-0.42735045,"marketCap":67105152040960,"revenueTtm":44418706712064,"netIncomeTtm":12128647677000,"per":5.8781977,"pbv":0.7274373443853858,"roe":14.187999000000001,"dividendYield":10.11,"revenueGrowth":84,"earningsGrowth":64.3,"eps":396.38,"profitMargin":27.305,"financialCurrency":"USD","quarters":[{"period":"Q4 2025","revenue":9615481050000,"netIncome":2674141512000},{"period":"Q1 2026","revenue":8618974215000,"netIncome":2345291511000},{"period":"Q2 2026","revenue":9670152111000,"netIncome":3317089296000},{"period":"Q3 2026","revenue":16514101386000,"netIncome":3792125358000}]},{"symbol":"AKRA","name":"AKR Corporindo","price":1245,"changePct":-2.734375,"marketCap":24991475171328,"revenueTtm":60154133348352,"netIncomeTtm":null,"per":8.118683,"pbv":1.9618193707996185,"roe":22.207001,"dividendYield":7.8099996,"revenueGrowth":42.9,"earningsGrowth":66.60000000000001,"eps":153.35,"profitMargin":5.0430004,"financialCurrency":"IDR","quarters":[{"period":"Q3 2025","revenue":10977835750000,"netIncome":null},{"period":"Q1 2026","revenue":12940865120000,"netIncome":null},{"period":"Q2 2026","revenue":17901983500000,"netIncome":null},{"period":"Q3 2026","revenue":15688527480000,"netIncome":null}]},{"symbol":"AMMN","name":"Amman Mineral Internasional","price":3190,"changePct":-3.3333334999999997,"marketCap":230995605323776,"revenueTtm":83075026928640,"netIncomeTtm":22766792100000,"per":10.317281,"pbv":2.05045138855411,"roe":23.271,"dividendYield":0,"revenueGrowth":226.79999999999998,"earningsGrowth":null,"eps":309.19,"profitMargin":28.619,"financialCurrency":"USD","quarters":[{"period":"Q4 2025","revenue":21958735450000,"netIncome":7214700390000},{"period":"Q1 2026","revenue":null,"netIncome":2780694010000},{"period":"Q2 2026","revenue":22082372510000,"netIncome":5993213440000},{"period":"Q3 2026","revenue":21508018300000,"netIncome":6778184260000}]},{"symbol":"AMRT","name":"Sumber Alfaria Trijaya (Alfamart)","price":1040,"changePct":0.9708738,"marketCap":42735507603456,"revenueTtm":133549499875328,"netIncomeTtm":3498762000000,"per":12.272835,"pbv":2.3514249861514633,"roe":19.354999,"dividendYield":5.4399999999999995,"revenueGrowth":8.7,"earningsGrowth":-11.5,"eps":84.74,"profitMargin":2.6199998,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":null,"netIncome":1095985000000},{"period":"Q1 2026","revenue":35240388000000,"netIncome":1075532000000},{"period":"Q2 2026","revenue":null,"netIncome":949587000000},{"period":"Q3 2026","revenue":33332518000000,"netIncome":377658000000}]},{"symbol":"ANTM","name":"Aneka Tambang","price":2620,"changePct":-1.8726591000000001,"marketCap":62960605069312,"revenueTtm":101095200260096,"netIncomeTtm":10072296000000,"per":7.0734344,"pbv":1.5874006435637265,"roe":28.694999999999997,"dividendYield":7.8600004000000006,"revenueGrowth":98.1,"earningsGrowth":91.60000000000001,"eps":370.4,"profitMargin":9.963000599999999,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":12614315000000,"netIncome":1234255000000},{"period":"Q1 2026","revenue":29323338000000,"netIncome":3406782000000},{"period":"Q2 2026","revenue":33390942000000,"netIncome":2981804000000},{"period":"Q3 2026","revenue":25766605000000,"netIncome":2449455000000}]},{"symbol":"ARTO","name":"Bank Jago","price":530,"changePct":-6.1946902,"marketCap":7346505383936,"revenueTtm":2467075981312,"netIncomeTtm":343885000000,"per":20.022667,"pbv":0.8038816868167953,"roe":4.196,"dividendYield":0,"revenueGrowth":29.799999999999997,"earningsGrowth":50.8,"eps":26.47,"profitMargin":15.207,"financialCurrency":"IDR","quarters":[{"period":"Q3 2025","revenue":null,"netIncome":72000000000},{"period":"Q4 2025","revenue":891113000000,"netIncome":77101000000},{"period":"Q1 2026","revenue":862800000000,"netIncome":85776000000},{"period":"Q3 2026","revenue":999586000000,"netIncome":109008000000}]},{"symbol":"BBNI","name":"Bank Negara Indonesia","price":3580,"changePct":0.28011205,"marketCap":133473541029888,"revenueTtm":53502478909440,"netIncomeTtm":null,"per":6.347518,"pbv":0.7854265206065861,"roe":12.16,"dividendYield":9.790000000000001,"revenueGrowth":12.4,"earningsGrowth":6.800000000000001,"eps":564,"profitMargin":39.328,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":18471000000000,"netIncome":null},{"period":"Q1 2026","revenue":15591960000000,"netIncome":5660764000000},{"period":"Q2 2026","revenue":17238000000000,"netIncome":5095000000000},{"period":"Q3 2026","revenue":17697000000000,"netIncome":5360000000000}]},{"symbol":"BBTN","name":"Bank Tabungan Negara","price":1005,"changePct":-1.4705882,"marketCap":14104617025536,"revenueTtm":17542740443136,"netIncomeTtm":4196977000000,"per":3.3724833,"pbv":0.3755445395823945,"roe":11.7419995,"dividendYield":0,"revenueGrowth":24.7,"earningsGrowth":59.8,"eps":298,"profitMargin":23.923999000000002,"financialCurrency":"IDR","quarters":[{"period":"Q3 2025","revenue":4287370000000,"netIncome":596291000000},{"period":"Q4 2025","revenue":null,"netIncome":1198474000000},{"period":"Q1 2026","revenue":null,"netIncome":1107979000000},{"period":"Q2 2026","revenue":null,"netIncome":1294233000000}]},{"symbol":"BREN","name":"Barito Renewables Energy","price":2300,"changePct":-1.7094018,"marketCap":307692899926016,"revenueTtm":11871417168576,"netIncomeTtm":null,"per":113.02211,"pbv":20.943743284343185,"roe":20.714001,"dividendYield":0.16999999999999998,"revenueGrowth":5.800000000000001,"earningsGrowth":11.1,"eps":20.35,"profitMargin":24.433,"financialCurrency":"USD","quarters":[]},{"symbol":"BRIS","name":"Bank Syariah Indonesia","price":1170,"changePct":-2.5,"marketCap":53971234324480,"revenueTtm":25320080015360,"netIncomeTtm":null,"per":6.7614427,"pbv":1.0574168300993247,"roe":16.148001,"dividendYield":2.77,"revenueGrowth":10.9,"earningsGrowth":5,"eps":173.04,"profitMargin":31.524,"financialCurrency":"IDR","quarters":[{"period":"Q1 2025","revenue":null,"netIncome":1878797000000},{"period":"Q3 2025","revenue":6043884000000,"netIncome":null},{"period":"Q4 2025","revenue":null,"netIncome":1998597000000},{"period":"Q3 2026","revenue":6726009000000,"netIncome":1971477000000}]},{"symbol":"BRPT","name":"Barito Pacific","price":635,"changePct":-6.6176474,"marketCap":59505366794240,"revenueTtm":196959350261760,"netIncomeTtm":2501156920000,"per":25.288729,"pbv":1.2849542981215385,"roe":6.345000000000001,"dividendYield":0.23999999000000002,"revenueGrowth":28.799999999999997,"earningsGrowth":-10,"eps":25.11,"profitMargin":1.2660000500000002,"financialCurrency":"USD","quarters":[{"period":"Q4 2025","revenue":null,"netIncome":-1565266090000},{"period":"Q1 2026","revenue":null,"netIncome":1570753840000},{"period":"Q2 2026","revenue":null,"netIncome":1805862510000},{"period":"Q3 2026","revenue":null,"netIncome":689806660000}]},{"symbol":"BSDE","name":"Bumi Serpong Damai","price":470,"changePct":-0.8438818000000001,"marketCap":9829295849472,"revenueTtm":11562278453248,"netIncomeTtm":null,"per":4.8503613,"pbv":0.2176675669767735,"roe":4.552,"dividendYield":0,"revenueGrowth":17.4,"earningsGrowth":218.8,"eps":96.9,"profitMargin":17.527,"financialCurrency":"IDR","quarters":[{"period":"Q2 2025","revenue":3689852470000,"netIncome":null},{"period":"Q3 2025","revenue":2372024730000,"netIncome":null},{"period":"Q4 2025","revenue":4025671120000,"netIncome":null},{"period":"Q1 2026","revenue":2368795970000,"netIncome":277628650000}]},{"symbol":"BUKA","name":"Bukalapak","price":117,"changePct":-0.8474575999999999,"marketCap":10744538071040,"revenueTtm":7424245760000,"netIncomeTtm":null,"per":null,"pbv":0.44335143369243535,"roe":-2.6069999999999998,"dividendYield":0,"revenueGrowth":0.6,"earningsGrowth":null,"eps":-8.07,"profitMargin":-8.777001,"financialCurrency":"IDR","quarters":[{"period":"Q3 2024","revenue":986935130000,"netIncome":null},{"period":"Q2 2026","revenue":null,"netIncome":-820740260000},{"period":"Q3 2026","revenue":null,"netIncome":-65149670000}]},{"symbol":"BUMI","name":"Bumi Resources","price":127,"changePct":-1.5503876,"marketCap":47159596548096,"revenueTtm":29533446694272,"netIncomeTtm":null,"per":22.965641,"pbv":1.734688302464077,"roe":5.421,"dividendYield":0,"revenueGrowth":36.4,"earningsGrowth":9200,"eps":5.53,"profitMargin":7.403,"financialCurrency":"USD","quarters":[]},{"symbol":"BYAN","name":"Bayan Resources","price":9625,"changePct":-3.2663316,"marketCap":320833352368128,"revenueTtm":62630797321728,"netIncomeTtm":null,"per":26.571514,"pbv":6.57337594929793,"roe":32.599998,"dividendYield":2.69,"revenueGrowth":-15.2,"earningsGrowth":3.8,"eps":362.23,"profitMargin":24.413999999999998,"financialCurrency":"USD","quarters":[]},{"symbol":"CPIN","name":"Charoen Pokphand Indonesia","price":2310,"changePct":-2.9411765,"marketCap":37879380180992,"revenueTtm":80304110829568,"netIncomeTtm":null,"per":5.076923,"pbv":1.041412606322141,"roe":21.837,"dividendYield":7.5600000000000005,"revenueGrowth":18.5,"earningsGrowth":0.6,"eps":455,"profitMargin":9.291001,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":20100446000000,"netIncome":2278820000000},{"period":"Q1 2026","revenue":19952120000000,"netIncome":2577936000000},{"period":"Q2 2026","revenue":19466374000000,"netIncome":null},{"period":"Q3 2026","revenue":20785169000000,"netIncome":1473839000000}]},{"symbol":"CTRA","name":"Ciputra Development","price":478,"changePct":-2.8455285,"marketCap":8860061401088,"revenueTtm":11710750523392,"netIncomeTtm":2363042000000,"per":3.7637796,"pbv":0.3583673145018057,"roe":9.352,"dividendYield":7.32,"revenueGrowth":-8.7,"earningsGrowth":-41.8,"eps":127,"profitMargin":20.177999,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":4224892000000,"netIncome":1041170000000},{"period":"Q1 2026","revenue":2557503000000,"netIncome":518309000000},{"period":"Q2 2026","revenue":2636559000000,"netIncome":578655000000},{"period":"Q3 2026","revenue":2291797000000,"netIncome":224908000000}]},{"symbol":"CUAN","name":"Petrindo Jaya Kreasi","price":346,"changePct":-6.989247,"marketCap":38890123558912,"revenueTtm":27999234764544,"netIncomeTtm":null,"per":24.195805,"pbv":6.301334935984993,"roe":30.101,"dividendYield":0,"revenueGrowth":12,"earningsGrowth":null,"eps":14.3,"profitMargin":6.277000000000001,"financialCurrency":"USD","quarters":[]},{"symbol":"DSSA","name":"Dian Swastatika Sentosa","price":595,"changePct":-6.2992126,"marketCap":92065610334208,"revenueTtm":59314802105856,"netIncomeTtm":null,"per":20.746164,"pbv":2.3220237119597877,"roe":18.789,"dividendYield":0,"revenueGrowth":84.3,"earningsGrowth":456.1,"eps":28.68,"profitMargin":9.498,"financialCurrency":"USD","quarters":[]},{"symbol":"EMTK","name":"Elang Mahkota Teknologi","price":260,"changePct":-2.9850746,"marketCap":15907451568128,"revenueTtm":21290964484096,"netIncomeTtm":null,"per":166.66667,"pbv":0.42050920429954486,"roe":1.03400005,"dividendYield":3.73,"revenueGrowth":3.4000000000000004,"earningsGrowth":-97.1,"eps":1.56,"profitMargin":0.45399999999999996,"financialCurrency":"IDR","quarters":[]},{"symbol":"ESSA","name":"ESSA Industries","price":505,"changePct":0,"marketCap":8699622457344,"revenueTtm":7422777257280,"netIncomeTtm":null,"per":7.194757,"pbv":1.061196357049496,"roe":17.152001,"dividendYield":10.299999999999999,"revenueGrowth":98.2,"earningsGrowth":224.00000000000003,"eps":70.19,"profitMargin":17.284,"financialCurrency":"USD","quarters":[]},{"symbol":"EXCL","name":"XLSmart Telecom Sejahtera","price":1690,"changePct":-1.1695907,"marketCap":30757768658944,"revenueTtm":47635973013504,"netIncomeTtm":-4087030000000,"per":null,"pbv":1.0883312854673641,"roe":-11.328000000000001,"dividendYield":9.3,"revenueGrowth":2.6,"earningsGrowth":null,"eps":-197,"profitMargin":-7.189000399999999,"financialCurrency":"IDR","quarters":[{"period":"Q3 2025","revenue":11452569000000,"netIncome":-1379561000000},{"period":"Q4 2025","revenue":11898497000000,"netIncome":-1823536000000},{"period":"Q2 2026","revenue":12173264000000,"netIncome":-277220000000},{"period":"Q3 2026","revenue":11744869000000,"netIncome":-606713000000}]},{"symbol":"GGRM","name":"Gudang Garam","price":15775,"changePct":-0.47318614,"marketCap":30352489840640,"revenueTtm":83531141218304,"netIncomeTtm":1042678000000,"per":6.1049,"pbv":0.4630411013186765,"roe":7.7909999999999995,"dividendYield":5.050000000000001,"revenueGrowth":-11.5,"earningsGrowth":56.2,"eps":2583.99,"profitMargin":5.9520002000000005,"financialCurrency":"IDR","quarters":[{"period":"Q1 2024","revenue":null,"netIncome":595572000000},{"period":"Q2 2024","revenue":23753646000000,"netIncome":329942000000},{"period":"Q1 2025","revenue":null,"netIncome":104432000000},{"period":"Q2 2025","revenue":21302201000000,"netIncome":12732000000}]},{"symbol":"GOTO","name":"GoTo Gojek Tokopedia","price":26,"changePct":0,"marketCap":27730611535872,"revenueTtm":21575642382336,"netIncomeTtm":null,"per":38.80597,"pbv":0.8399560638366609,"roe":1.228,"dividendYield":0,"revenueGrowth":17.299999999999997,"earningsGrowth":null,"eps":0.67,"profitMargin":3.497,"financialCurrency":"IDR","quarters":[{"period":"Q3 2025","revenue":4736512000000,"netIncome":-195537000000},{"period":"Q4 2025","revenue":5026636000000,"netIncome":-410104000000},{"period":"Q2 2026","revenue":5652799000000,"netIncome":null},{"period":"Q3 2026","revenue":5554893000000,"netIncome":557037000000}]},{"symbol":"HMSP","name":"HM Sampoerna","price":630,"changePct":0,"marketCap":73280388071424,"revenueTtm":50064596664320,"netIncomeTtm":5105795000000,"per":8.513514,"pbv":2.5934357260179235,"roe":31.577998,"dividendYield":8.939999,"revenueGrowth":7.8,"earningsGrowth":-2.6,"eps":74,"profitMargin":17.204,"financialCurrency":"IDR","quarters":[{"period":"Q2 2024","revenue":28709817000000,"netIncome":1069684000000},{"period":"Q3 2024","revenue":30651101000000,"netIncome":1907718000000},{"period":"Q1 2025","revenue":null,"netIncome":1918261000000},{"period":"Q2 2025","revenue":26384456000000,"netIncome":210132000000}]},{"symbol":"HRUM","name":"Harum Energy","price":655,"changePct":0,"marketCap":8612304388096,"revenueTtm":39164303728512,"netIncomeTtm":null,"per":7.0467997,"pbv":0.4708747775026815,"roe":8.968,"dividendYield":0,"revenueGrowth":96.8,"earningsGrowth":354.4,"eps":92.95,"profitMargin":3.312,"financialCurrency":"USD","quarters":[{"period":"Q1 2024","revenue":4320970630000,"netIncome":16039980000},{"period":"Q2 2024","revenue":5377007530000,"netIncome":591467120000},{"period":"Q3 2024","revenue":5862716480000,"netIncome":null},{"period":"Q4 2024","revenue":5386512940000,"netIncome":null}]},{"symbol":"ICBP","name":"Indofood CBP Sukses Makmur","price":7200,"changePct":0.6993007,"marketCap":83965738221568,"revenueTtm":83029838004224,"netIncomeTtm":8282536000000,"per":10.140845,"pbv":1.5175248831927375,"roe":13.506000000000002,"dividendYield":3.7100002,"revenueGrowth":21,"earningsGrowth":56.699999999999996,"eps":710,"profitMargin":9.9750005,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":18584141000000,"netIncome":2116678000000},{"period":"Q1 2026","revenue":21715724000000,"netIncome":2573904000000},{"period":"Q2 2026","revenue":20147664000000,"netIncome":1128660000000},{"period":"Q3 2026","revenue":22582307000000,"netIncome":2463294000000}]},{"symbol":"INCO","name":"Vale Indonesia","price":3400,"changePct":0.591716,"marketCap":35835265155072,"revenueTtm":21613555271424,"netIncomeTtm":2931316965000,"per":12.167627,"pbv":0.6804465089992052,"roe":6.067,"dividendYield":2.3,"revenueGrowth":26.700000000000003,"earningsGrowth":57.199999999999996,"eps":279.43,"profitMargin":14.458999,"financialCurrency":"USD","quarters":[{"period":"Q3 2025","revenue":5100130950000,"netIncome":604493181000},{"period":"Q4 2025","revenue":5212804218000,"netIncome":432243648000},{"period":"Q2 2026","revenue":5315282715000,"netIncome":1112181795000},{"period":"Q3 2026","revenue":6460977303000,"netIncome":782398341000}]},{"symbol":"INDF","name":"Indofood Sukses Makmur","price":7025,"changePct":-2.0905923,"marketCap":61682495782912,"revenueTtm":134002073665536,"netIncomeTtm":10669074000000,"per":5.781893,"pbv":0.7723786403497198,"roe":13.095,"dividendYield":4.04,"revenueGrowth":15.5,"earningsGrowth":53.800000000000004,"eps":1215,"profitMargin":7.9619995999999995,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":32512124000000,"netIncome":2803306000000},{"period":"Q1 2026","revenue":33890696000000,"netIncome":2958189000000},{"period":"Q2 2026","revenue":31634826000000,"netIncome":1766061000000},{"period":"Q3 2026","revenue":35964431000000,"netIncome":3141518000000}]},{"symbol":"INTP","name":"Indocement Tunggal Prakarsa","price":6225,"changePct":2.4691358,"marketCap":20440152014848,"revenueTtm":18885763923968,"netIncomeTtm":2487573000000,"per":8.26847,"pbv":0.8957085846293529,"roe":11.088000000000001,"dividendYield":7.7,"revenueGrowth":15.1,"earningsGrowth":27.1,"eps":752.86,"profitMargin":13.172,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":4815019000000,"netIncome":1185698000000},{"period":"Q1 2026","revenue":3844318000000,"netIncome":215193000000},{"period":"Q2 2026","revenue":4606862000000,"netIncome":374449000000},{"period":"Q3 2026","revenue":5619577000000,"netIncome":712233000000}]},{"symbol":"ISAT","name":"Indosat","price":1405,"changePct":-6.9536425,"marketCap":45312387317760,"revenueTtm":61106718507008,"netIncomeTtm":6604920000000,"per":6.620488,"pbv":1.203078854326417,"roe":18.090999,"dividendYield":7.35,"revenueGrowth":7.3999999999999995,"earningsGrowth":-51.1,"eps":212.22,"profitMargin":11.1999996,"financialCurrency":"IDR","quarters":[{"period":"Q3 2025","revenue":14052000000000,"netIncome":1252100000000},{"period":"Q4 2025","revenue":15356566000000,"netIncome":1922314000000},{"period":"Q2 2026","revenue":15432400000000,"netIncome":2817606000000},{"period":"Q3 2026","revenue":15097100000000,"netIncome":612900000000}]},{"symbol":"ITMG","name":"Indo Tambangraya Megah","price":24650,"changePct":0.8179959000000001,"marketCap":26352365338624,"revenueTtm":38680003420032,"netIncomeTtm":3714355911000,"per":7.1453624,"pbv":0.7587457763023533,"roe":11.95,"dividendYield":7.08,"revenueGrowth":33.6,"earningsGrowth":49.4,"eps":3449.79,"profitMargin":10.566,"financialCurrency":"USD","quarters":[{"period":"Q3 2025","revenue":8228735952000,"netIncome":732248121000},{"period":"Q1 2026","revenue":9107151831000,"netIncome":1000698222000},{"period":"Q2 2026","revenue":9204834942000,"netIncome":939383172000},{"period":"Q3 2026","revenue":10998876699000,"netIncome":1042026396000}]},{"symbol":"JPFA","name":"Japfa Comfeed Indonesia","price":1430,"changePct":-0.6944444999999999,"marketCap":16737965703168,"revenueTtm":72136416821248,"netIncomeTtm":null,"per":3.4618828,"pbv":0.7786334275497931,"roe":25.112000000000002,"dividendYield":15.97,"revenueGrowth":22.7,"earningsGrowth":-35.699999999999996,"eps":413.07,"profitMargin":6.687,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":17611425000000,"netIncome":null},{"period":"Q1 2026","revenue":null,"netIncome":1816410000000},{"period":"Q2 2026","revenue":17641126000000,"netIncome":659007000000},{"period":"Q3 2026","revenue":19169864000000,"netIncome":755963000000}]},{"symbol":"KLBF","name":"Kalbe Farma","price":800,"changePct":0.6289308,"marketCap":36154653016064,"revenueTtm":38310261030912,"netIncomeTtm":3770547670000,"per":9.625797,"pbv":1.439905542196432,"roe":15.129999999999999,"dividendYield":2.52,"revenueGrowth":6.6000000000000005,"earningsGrowth":25.2,"eps":83.11,"profitMargin":9.841999999999999,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":null,"netIncome":1033652670000},{"period":"Q1 2026","revenue":null,"netIncome":1028927000000},{"period":"Q2 2026","revenue":null,"netIncome":890536000000},{"period":"Q3 2026","revenue":9495208000000,"netIncome":817432000000}]},{"symbol":"MAPI","name":"Mitra Adiperkasa","price":1040,"changePct":-2.803738,"marketCap":17264000630784,"revenueTtm":50453719023616,"netIncomeTtm":2577182000000,"per":6.716611,"pbv":1.0904347899025737,"roe":17.666999999999998,"dividendYield":0.9299999999999999,"revenueGrowth":26.700000000000003,"earningsGrowth":22.7,"eps":154.84,"profitMargin":5.108,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":13045691000000,"netIncome":856371000000},{"period":"Q1 2026","revenue":12292345000000,"netIncome":628036000000},{"period":"Q2 2026","revenue":null,"netIncome":587466000000},{"period":"Q3 2026","revenue":13282130000000,"netIncome":505309000000}]},{"symbol":"MDKA","name":"Merdeka Copper Gold","price":1750,"changePct":-2.5069637,"marketCap":42737210490880,"revenueTtm":52500847640832,"netIncomeTtm":2376059586120,"per":45.919704,"pbv":2.6559094744638103,"roe":12.639,"dividendYield":0.6799999999999999,"revenueGrowth":98.5,"earningsGrowth":null,"eps":38.11,"profitMargin":4.526,"financialCurrency":"USD","quarters":[{"period":"Q4 2025","revenue":11122749938760,"netIncome":-499721318100},{"period":"Q1 2026","revenue":11352972576990,"netIncome":1051614971640},{"period":"Q2 2026","revenue":14314788013920,"netIncome":807215927790},{"period":"Q3 2026","revenue":15710335024620,"netIncome":1016950004790}]},{"symbol":"MEDC","name":"Medco Energi Internasional","price":1185,"changePct":1.2820513,"marketCap":29301418229760,"revenueTtm":47696594203392,"netIncomeTtm":5330828551080,"per":5.132314,"pbv":0.6887604752621649,"roe":15.089,"dividendYield":5.510000000000001,"revenueGrowth":27.3,"earningsGrowth":1491.5,"eps":230.89,"profitMargin":13.259000000000002,"financialCurrency":"USD","quarters":[{"period":"Q2 2025","revenue":null,"netIncome":358071106560},{"period":"Q3 2025","revenue":null,"netIncome":886967406660},{"period":"Q4 2025","revenue":null,"netIncome":280035900000},{"period":"Q2 2026","revenue":13662007126200,"netIncome":3805754137860}]},{"symbol":"MYOR","name":"Mayora Indah","price":1510,"changePct":-1.6286645,"marketCap":33260293849088,"revenueTtm":39656783609856,"netIncomeTtm":3440142020000,"per":9.791207,"pbv":1.7615163506047484,"roe":19.017999999999997,"dividendYield":3.9100002000000003,"revenueGrowth":9.1,"earningsGrowth":5,"eps":154.22,"profitMargin":8.681999999999999,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":11524066650000,"netIncome":1015618800000},{"period":"Q1 2026","revenue":9392264160000,"netIncome":942794540000},{"period":"Q2 2026","revenue":8529580570000,"netIncome":763879200000},{"period":"Q3 2026","revenue":10210870630000,"netIncome":717849480000}]},{"symbol":"PANI","name":"Pantai Indah Kapuk Dua","price":3400,"changePct":0.8902078000000001,"marketCap":61844307836928,"revenueTtm":4902584582144,"netIncomeTtm":null,"per":26.52727,"pbv":2.105005082968156,"roe":8.189,"dividendYield":0.15,"revenueGrowth":-47.5,"earningsGrowth":-49.8,"eps":128.17,"profitMargin":46.870998,"financialCurrency":"IDR","quarters":[]},{"symbol":"PGAS","name":"Perusahaan Gas Negara","price":1520,"changePct":-0.6535948,"marketCap":36847090663424,"revenueTtm":74534093923584,"netIncomeTtm":7790026586220,"per":7.867902,"pbv":0.7097991035050534,"roe":11.187999999999999,"dividendYield":8.2100004,"revenueGrowth":10.7,"earningsGrowth":35.699999999999996,"eps":193.19,"profitMargin":6.641,"financialCurrency":"USD","quarters":[{"period":"Q3 2025","revenue":null,"netIncome":2428148825940},{"period":"Q1 2026","revenue":null,"netIncome":1655469011880},{"period":"Q2 2026","revenue":null,"netIncome":2046853042680},{"period":"Q3 2026","revenue":null,"netIncome":1659555705720}]},{"symbol":"PTBA","name":"Bukit Asam","price":2950,"changePct":1.0273972500000002,"marketCap":33967354937344,"revenueTtm":46522813120512,"netIncomeTtm":4979138000000,"per":5.7170544,"pbv":1.2527736195602552,"roe":24.898,"dividendYield":3.92,"revenueGrowth":21.099999999999998,"earningsGrowth":214.2,"eps":516,"profitMargin":12.781999999999998,"financialCurrency":"IDR","quarters":[{"period":"Q3 2025","revenue":10877905000000,"netIncome":560982000000},{"period":"Q1 2026","revenue":9929722000000,"netIncome":801794000000},{"period":"Q2 2026","revenue":12098179000000,"netIncome":1848105000000},{"period":"Q3 2026","revenue":13173484000000,"netIncome":1768257000000}]},{"symbol":"PWON","name":"Pakuwon Jati","price":300,"changePct":-0.66225166,"marketCap":14447879913472,"revenueTtm":7201207353344,"netIncomeTtm":2013054500000,"per":7.1770334,"pbv":0.623208276205908,"roe":9.0129994,"dividendYield":4.3,"revenueGrowth":5.1,"earningsGrowth":-34.4,"eps":41.8,"profitMargin":27.954,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":1993390650000,"netIncome":619594410000},{"period":"Q1 2026","revenue":1645854130000,"netIncome":389992880000},{"period":"Q2 2026","revenue":1728022080000,"netIncome":616277250000},{"period":"Q3 2026","revenue":1833940720000,"netIncome":387189960000}]},{"symbol":"SIDO","name":"Sido Muncul","price":338,"changePct":-1.1695907,"marketCap":9949097754624,"revenueTtm":3849837871104,"netIncomeTtm":null,"per":9.73222,"pbv":3.0391583869082406,"roe":30.795,"dividendYield":5.8500000000000005,"revenueGrowth":14.7,"earningsGrowth":31.3,"eps":34.73,"profitMargin":26.748,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":1350676000000,"netIncome":null},{"period":"Q1 2026","revenue":640499000000,"netIncome":147213000000},{"period":"Q2 2026","revenue":826159000000,"netIncome":null},{"period":"Q3 2026","revenue":1032504000000,"netIncome":null}]},{"symbol":"SMGR","name":"Semen Indonesia (SIG)","price":1555,"changePct":-1.2698413,"marketCap":10473771630592,"revenueTtm":37607497007104,"netIncomeTtm":607852000000,"per":17.277779,"pbv":0.23816018424255642,"roe":1.023,"dividendYield":1.7999999999999998,"revenueGrowth":3.3000000000000003,"earningsGrowth":306.9,"eps":90,"profitMargin":1.616,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":9939097000000,"netIncome":76011000000},{"period":"Q1 2026","revenue":8288486000000,"netIncome":80342000000},{"period":"Q2 2026","revenue":9361030000000,"netIncome":147914000000},{"period":"Q3 2026","revenue":10018885000000,"netIncome":303585000000}]},{"symbol":"SMRA","name":"Summarecon Agung","price":288,"changePct":-1.369863,"marketCap":4754467979264,"revenueTtm":8632688705536,"netIncomeTtm":null,"per":7.6473713,"pbv":0.3975116872576801,"roe":6.569999999999999,"dividendYield":1.71,"revenueGrowth":10.7,"earningsGrowth":57.199999999999996,"eps":37.66,"profitMargin":7.202,"financialCurrency":"IDR","quarters":[{"period":"Q1 2024","revenue":null,"netIncome":441391600000},{"period":"Q1 2026","revenue":2233236170000,"netIncome":189763560000}]},{"symbol":"TBIG","name":"Tower Bersama Infrastructure","price":1265,"changePct":1.2,"marketCap":28526526857216,"revenueTtm":6919333871616,"netIncomeTtm":1466758000000,"per":19.691782,"pbv":2.209799982531225,"roe":12.45,"dividendYield":3.7600000000000002,"revenueGrowth":1.4000000000000001,"earningsGrowth":8.9,"eps":64.24,"profitMargin":20.813000000000002,"financialCurrency":"IDR","quarters":[{"period":"Q3 2024","revenue":null,"netIncome":436586000000},{"period":"Q4 2024","revenue":null,"netIncome":194240000000},{"period":"Q1 2026","revenue":null,"netIncome":390099000000},{"period":"Q2 2026","revenue":1742452000000,"netIncome":445833000000}]},{"symbol":"TOWR","name":"Sarana Menara Nusantara","price":378,"changePct":-0.5263158,"marketCap":22080110198784,"revenueTtm":14701313392640,"netIncomeTtm":3520325000000,"per":5.5588236,"pbv":0.7467566462329288,"roe":14.213000000000001,"dividendYield":3.63,"revenueGrowth":17.1,"earningsGrowth":-1.4000000000000001,"eps":68,"profitMargin":26.509002,"financialCurrency":"IDR","quarters":[{"period":"Q3 2024","revenue":null,"netIncome":842200000000},{"period":"Q4 2024","revenue":null,"netIncome":888200000000},{"period":"Q2 2025","revenue":3185790000000,"netIncome":849186000000},{"period":"Q1 2026","revenue":null,"netIncome":940739000000}]},{"symbol":"TPIA","name":"Chandra Asri Pacific","price":1185,"changePct":-3.265306,"marketCap":102460429434880,"revenueTtm":184984612804608,"netIncomeTtm":null,"per":343.47824,"pbv":1.407467058144424,"roe":3.7969999999999997,"dividendYield":0.5,"revenueGrowth":29.799999999999997,"earningsGrowth":null,"eps":3.45,"profitMargin":0.717,"financialCurrency":"USD","quarters":[]},{"symbol":"UNTR","name":"United Tractors","price":23775,"changePct":2.0386267,"marketCap":81631163449344,"revenueTtm":121170212945920,"netIncomeTtm":7800646000000,"per":10.831435,"pbv":0.8272011430997785,"roe":7.4099995000000005,"dividendYield":3.6900000000000004,"revenueGrowth":0.3,"earningsGrowth":10.100000000000001,"eps":2195,"profitMargin":6.4380005,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":30835607000000,"netIncome":3335268000000},{"period":"Q1 2026","revenue":28554084000000,"netIncome":642755000000},{"period":"Q2 2026","revenue":29735327000000,"netIncome":313526000000},{"period":"Q3 2026","revenue":32045196000000,"netIncome":3509097000000}]},{"symbol":"UNVR","name":"Unilever Indonesia","price":1615,"changePct":3.858521,"marketCap":61339691122688,"revenueTtm":33664542965760,"netIncomeTtm":8507001000000,"per":17.418032,"pbv":14.586475672648778,"roe":101.96300000000001,"dividendYield":14.66,"revenueGrowth":7.3999999999999995,"earningsGrowth":4.7,"eps":92.72,"profitMargin":25.27,"financialCurrency":"IDR","quarters":[{"period":"Q4 2025","revenue":4330206000000,"netIncome":4305912000000},{"period":"Q1 2026","revenue":8442646000000,"netIncome":2140628000000},{"period":"Q2 2026","revenue":8456935000000,"netIncome":829096000000},{"period":"Q3 2026","revenue":8851936000000,"netIncome":1231365000000}]}],"fetchedAt":"2026-11-25T13:41:06.755Z","source":"Yahoo Finance","usdIdrRate":18303,"stale":false};
+      var NA = "Data tidak tersedia";
+
+      var rpFmt = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 0 });
+      var numFmt2 = new Intl.NumberFormat("id-ID", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      var dateTimeFmt = new Intl.DateTimeFormat("id-ID", {
+        timeZone: "Asia/Jakarta", day: "numeric", month: "long", year: "numeric",
+        hour: "2-digit", minute: "2-digit"
+      });
+
+      function fmtPrice(v) { return "Rp " + rpFmt.format(Math.round(v)); }
+      function fmtTriliun(v) {
+        if (v == null) return NA;
+        var abs = Math.abs(v);
+        if (abs >= 1e12) return numFmt2.format(v / 1e12) + " T";
+        if (abs >= 1e9) return numFmt2.format(v / 1e9) + " M";
+        return "Rp " + rpFmt.format(v);
+      }
+      function fmtX(v) { return v == null ? NA : numFmt2.format(v) + "x"; }
+      function fmtPct(v, signed) {
+        if (v == null) return NA;
+        var s = signed && v > 0 ? "+" : "";
+        return s + numFmt2.format(v) + "%";
+      }
+      function esc(s) {
+        return String(s).replace(/[&<>"']/g, function (c) {
+          return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+        });
+      }
+
+      // ---- Kepala halaman ----
+      var fetchedLabel = dateTimeFmt.format(new Date(DATA.fetchedAt)) + " WIB";
+      document.getElementById("edition-line").textContent =
+        "Edisi " + fetchedLabel + " · Sumber: Yahoo Finance (ticker .JK)" +
+        (DATA.usdIdrRate != null ? " · Kurs konversi USD/IDR Rp " + rpFmt.format(DATA.usdIdrRate) : "");
+      document.getElementById("methodology").textContent =
+        "Sumber data: Yahoo Finance (ticker berakhiran .JK), diambil " + fetchedLabel +
+        ". Semua harga dalam Rupiah; pendapatan dan laba bersih disamakan ke triliun Rupiah. " +
+        "Laba bersih TTM adalah jumlah laba bersih 4 kuartal terakhir yang diterbitkan Yahoo; " +
+        "bila riwayat kuartal tidak lengkap, nilainya ditampilkan sebagai \u201CData tidak tersedia\u201D dan tidak dikarang. " +
+        "Emiten yang melaporkan keuangan dalam USD (mis. BREN, CUAN, INCO, MEDC) dikonversi memakai kurs USD/IDR Yahoo pada saat pengambilan" +
+        (DATA.usdIdrRate != null ? " (edisi ini: Rp " + rpFmt.format(DATA.usdIdrRate) + " per USD)" : "") +
+        ". PBV dihitung dari harga dibagi nilai buku per saham yang sudah dikonversi ke Rupiah, " +
+        "karena PBV terbitan Yahoo keliru untuk emiten pelapor USD.";
+
+      // ---- Sorotan ----
+      function pick(label, get, valid, better, format) {
+        var best = null, bestVal = 0;
+        DATA.stocks.forEach(function (s) {
+          var v = get(s);
+          if (v == null || !valid(v)) return;
+          if (!best || better(v, bestVal)) { best = s; bestVal = v; }
+        });
+        return { label: label, stock: best, value: best ? format(bestVal) : NA };
+      }
+      var highlights = [
+        pick("PER TERENDAH", function (s) { return s.per; }, function (v) { return v > 0; }, function (a, b) { return a < b; }, function (v) { return fmtX(v); }),
+        pick("ROE TERTINGGI", function (s) { return s.roe; }, function () { return true; }, function (a, b) { return a > b; }, function (v) { return fmtPct(v); }),
+        pick("DIVIDEN YIELD TERTINGGI", function (s) { return s.dividendYield; }, function (v) { return v > 0; }, function (a, b) { return a > b; }, function (v) { return fmtPct(v); }),
+        pick("PERTUMBUHAN LABA TERCEPAT", function (s) { return s.earningsGrowth; }, function () { return true; }, function (a, b) { return a > b; }, function (v) { return fmtPct(v, true); })
+      ];
+      document.getElementById("highlights").innerHTML = highlights.map(function (h) {
+        if (!h.stock) return '<div class="hl-card"><p class="hl-label">' + h.label + '</p><p class="hl-value" style="font-size:14px;color:var(--dim)">' + NA + "</p></div>";
+        return '<div class="hl-card"><p class="hl-label">' + h.label + '</p>' +
+          '<p class="hl-value">' + esc(h.value) + "</p>" +
+          '<p class="hl-sym">' + esc(h.stock.symbol) + "</p>" +
+          '<p class="hl-name">' + esc(h.stock.name) + "</p></div>";
+      }).join("");
+
+      // ---- Kolom & nilai sel ----
+      var COLUMNS = [
+        { key: "symbol", label: "Emiten" },
+        { key: "price", label: "Harga" },
+        { key: "revenueTtm", label: "Pendapatan TTM", hint: "Rp triliun" },
+        { key: "netIncomeTtm", label: "Laba Bersih TTM", hint: "Rp triliun" },
+        { key: "per", label: "PER" },
+        { key: "pbv", label: "PBV" },
+        { key: "roe", label: "ROE" },
+        { key: "dividendYield", label: "Dividen Yield" },
+        { key: "revenueGrowth", label: "Tumbuh Pendapatan" },
+        { key: "earningsGrowth", label: "Tumbuh Laba" }
+      ];
+      function cellValue(s, key) {
+        switch (key) {
+          case "symbol": return s.symbol;
+          case "price": return fmtPrice(s.price);
+          case "revenueTtm": return s.revenueTtm == null ? NA : fmtTriliun(s.revenueTtm);
+          case "netIncomeTtm": return s.netIncomeTtm == null ? NA : fmtTriliun(s.netIncomeTtm);
+          case "per": return fmtX(s.per);
+          case "pbv": return fmtX(s.pbv);
+          case "roe": return fmtPct(s.roe);
+          case "dividendYield": return fmtPct(s.dividendYield);
+          case "revenueGrowth": return fmtPct(s.revenueGrowth, true);
+          case "earningsGrowth": return fmtPct(s.earningsGrowth, true);
+        }
+        return "";
+      }
+      function isNegGrowth(s, key) {
+        if (key === "revenueGrowth") return (s.revenueGrowth || 0) < 0;
+        if (key === "earningsGrowth") return (s.earningsGrowth || 0) < 0;
+        return false;
+      }
+
+      // ---- Chart kuartalan (SVG) ----
+      function chartSVG(stock) {
+        var qs = (stock.quarters || []).filter(function (q) { return q.revenue != null || q.netIncome != null; });
+        if (!qs.length) {
+          return '<p class="na-note">' + NA + " — Yahoo Finance tidak menerbitkan riwayat laporan keuangan kuartalan untuk emiten ini.</p>";
+        }
+        var W = 520, H = 240, padL = 46, padR = 6, padT = 10, padB = 26;
+        var plotW = W - padL - padR, plotH = H - padT - padB;
+        var max = 0;
+        qs.forEach(function (q) {
+          if (q.revenue != null) max = Math.max(max, q.revenue / 1e12);
+          if (q.netIncome != null) max = Math.max(max, q.netIncome / 1e12);
+        });
+        if (max <= 0) max = 1;
+        var niceMax = Math.pow(10, Math.floor(Math.log10(max)));
+        niceMax = Math.ceil(max / niceMax) * niceMax;
+        if (niceMax < max) niceMax *= 2;
+        var out = '<svg viewBox="0 0 ' + W + " " + H + '" width="100%" role="img" aria-label="Chart pendapatan dan laba bersih per kuartal ' + esc(stock.symbol) + '">';
+        // gridlines + sumbu Y (4 langkah)
+        for (var i = 0; i <= 4; i++) {
+          var val = niceMax * i / 4;
+          var y = padT + plotH - (plotH * i / 4);
+          out += '<line x1="' + padL + '" y1="' + y + '" x2="' + (W - padR) + '" y2="' + y + '" stroke="var(--border)" stroke-width="1" stroke-dasharray="3 3"/>';
+          out += '<text x="' + (padL - 5) + '" y="' + (y + 3.5) + '" text-anchor="end" font-size="10" fill="var(--dim)">' + numFmt2.format(val) + "</text>";
+        }
+        var groupW = plotW / qs.length;
+        var barW = Math.min(26, groupW / 2 - 5);
+        qs.forEach(function (q, idx) {
+          var cx = padL + groupW * idx + groupW / 2;
+          [["revenue", "var(--accent-bright)", -barW - 2], ["netIncome", "var(--chart2)", 2]].forEach(function (cfg) {
+            var v = q[cfg[0]];
+            if (v == null) return;
+            var h = Math.max(1, (v / 1e12) / niceMax * plotH);
+            var x = cx + cfg[2];
+            var y2 = padT + plotH - h;
+            out += '<rect x="' + x + '" y="' + y2 + '" width="' + barW + '" height="' + h + '" rx="3" fill="' + cfg[1] + '"><title>' + esc(q.period) + " — " + (cfg[0] === "revenue" ? "Pendapatan" : "Laba bersih") + ": " + numFmt2.format(v / 1e12) + " T</title></rect>";
+          });
+          out += '<text x="' + cx + '" y="' + (H - 8) + '" text-anchor="middle" font-size="10.5" fill="var(--dim)">' + esc(q.period) + "</text>";
+        });
+        out += "</svg>";
+        out += '<div class="legend"><span class="l1">Pendapatan</span><span class="l2">Laba bersih</span></div>';
+        return out;
+      }
+
+      function detailHTML(stock) {
+        var ratios = [
+          ["Harga saham", fmtPrice(stock.price)],
+          ["Perubahan harga terakhir", fmtPct(stock.changePct, true)],
+          ["Kapitalisasi pasar", stock.marketCap == null ? NA : "Rp " + fmtTriliun(stock.marketCap)],
+          ["Pendapatan (TTM)", stock.revenueTtm == null ? NA : "Rp " + fmtTriliun(stock.revenueTtm)],
+          ["Laba bersih (TTM)", stock.netIncomeTtm == null ? NA : "Rp " + fmtTriliun(stock.netIncomeTtm)],
+          ["PER (trailing)", fmtX(stock.per)],
+          ["PBV", fmtX(stock.pbv)],
+          ["ROE", fmtPct(stock.roe)],
+          ["Dividen yield", fmtPct(stock.dividendYield)],
+          ["Pertumbuhan pendapatan (YoY)", fmtPct(stock.revenueGrowth, true)],
+          ["Pertumbuhan laba (YoY)", fmtPct(stock.earningsGrowth, true)],
+          ["EPS (TTM)", stock.eps == null ? NA : numFmt2.format(stock.eps) + " " + stock.financialCurrency],
+          ["Margin laba bersih", fmtPct(stock.profitMargin)],
+          ["Mata uang laporan", stock.financialCurrency]
+        ];
+        var dl = ratios.map(function (r) {
+          return "<div><dt>" + esc(r[0]) + '</dt><dd class="' + (r[1] === NA ? "na" : "") + '">' + esc(r[1]) + "</dd></div>";
+        }).join("");
+        return '<div class="detail"><h3>' + esc(stock.symbol) + " — " + esc(stock.name) + "</h3>" +
+          '<div class="detail-grid"><div class="chart-box"><p class="chart-title">PENDAPATAN &amp; LABA BERSIH PER KUARTAL (RP TRILIUN)</p>' +
+          chartSVG(stock) + '</div><dl class="ratio-grid">' + dl + "</dl></div></div>";
+      }
+
+      // ---- State & render ----
+      var search = "", sortKey = null, sortDir = 1, expanded = null;
+
+      function visibleStocks() {
+        var q = search.trim().toLowerCase();
+        var list = DATA.stocks.filter(function (s) {
+          return !q || s.symbol.toLowerCase().indexOf(q) >= 0 || s.name.toLowerCase().indexOf(q) >= 0;
+        });
+        if (sortKey) {
+          var key = sortKey;
+          list.sort(function (a, b) {
+            if (key === "symbol") return sortDir * a.symbol.localeCompare(b.symbol);
+            var av = a[key], bv = b[key];
+            if (av == null && bv == null) return 0;
+            if (av == null) return 1;
+            if (bv == null) return -1;
+            return sortDir * (av - bv);
+          });
+        }
+        return list;
+      }
+
+      function renderHead() {
+        document.getElementById("thead-row").innerHTML = COLUMNS.map(function (col) {
+          var active = sortKey === col.key;
+          var arrow = active ? (sortDir === 1 ? " ↑" : " ↓") : "";
+          return "<th" + (active ? ' aria-sort="' + (sortDir === 1 ? "ascending" : "descending") + '"' : "") + ">" +
+            '<button type="button" data-sort="' + col.key + '" class="' + (active ? "active" : "") + '" aria-label="Urutkan menurut ' + col.label + '">' +
+            "<span>" + col.label + (col.hint ? '<span class="hint">' + col.hint + "</span>" : "") + "</span>" + arrow + "</button></th>";
+        }).join("");
+        Array.prototype.forEach.call(document.querySelectorAll("[data-sort]"), function (btn) {
+          btn.addEventListener("click", function () {
+            var key = btn.getAttribute("data-sort");
+            if (sortKey === key) { sortDir = sortDir === 1 ? -1 : 1; }
+            else { sortKey = key; sortDir = key === "symbol" ? 1 : -1; }
+            render();
+          });
+        });
+      }
+
+      function render() {
+        renderHead();
+        var list = visibleStocks();
+        document.getElementById("count-line").textContent =
+          "Menampilkan " + list.length + " dari " + DATA.stocks.length +
+          " emiten · ketuk baris untuk detail & chart kuartalan. Angka pendapatan dan laba dalam triliun Rupiah (Rp T).";
+        document.getElementById("empty-msg").hidden = list.length > 0;
+
+        // Tabel desktop
+        var rows = "";
+        list.forEach(function (s) {
+          var open = expanded === s.symbol;
+          rows += '<tr class="data-row' + (open ? " open" : "") + '" data-sym="' + esc(s.symbol) + '">';
+          rows += '<td><button type="button" class="sym-btn" data-toggle="' + esc(s.symbol) + '" aria-expanded="' + open + '"><span class="sym">' + esc(s.symbol) + '</span><span class="co-name">' + esc(s.name) + "</span></button></td>";
+          COLUMNS.slice(1).forEach(function (col) {
+            var v = cellValue(s, col.key);
+            var cls = v === NA ? "na" : (isNegGrowth(s, col.key) ? "neg" : "");
+            rows += '<td class="' + cls + '">' + esc(v) + "</td>";
+          });
+          rows += "</tr>";
+          if (open) rows += '<tr><td colspan="' + COLUMNS.length + '" style="padding:0">' + detailHTML(s) + "</td></tr>";
+        });
+        document.getElementById("tbody").innerHTML = rows;
+
+        // Kartu ponsel
+        document.getElementById("cards").innerHTML = list.map(function (s) {
+          var open = expanded === s.symbol;
+          var metrics = [
+            ["Pendapatan TTM", s.revenueTtm == null ? NA : fmtTriliun(s.revenueTtm)],
+            ["Laba TTM", s.netIncomeTtm == null ? NA : fmtTriliun(s.netIncomeTtm)],
+            ["PER", fmtX(s.per)],
+            ["PBV", fmtX(s.pbv)],
+            ["ROE", fmtPct(s.roe)],
+            ["Dividen yield", fmtPct(s.dividendYield)]
+          ].map(function (m) {
+            return '<span><span class="lbl">' + m[0] + '</span><span class="val' + (m[1] === NA ? " na" : "") + '">' + esc(m[1]) + "</span></span>";
+          }).join("");
+          var chgCls = s.changePct == null ? "" : (s.changePct < 0 ? "neg" : "pos");
+          return '<div class="card"><button type="button" data-toggle="' + esc(s.symbol) + '" aria-expanded="' + open + '">' +
+            '<span class="card-top"><span><span class="sym">' + esc(s.symbol) + '</span> <span style="font-size:12px;color:var(--dim)">' + esc(s.name) + "</span></span>" +
+            '<span class="card-price"><span class="p">' + fmtPrice(s.price) + '</span><span class="c ' + chgCls + '">' + fmtPct(s.changePct, true) + "</span></span></span>" +
+            '<span class="card-metrics">' + metrics + "</span>" +
+            '<span class="card-toggle">' + (open ? "Tutup detail ↑" : "Detail &amp; chart kuartalan ↓") + "</span></button>" +
+            (open ? detailHTML(s) : "") + "</div>";
+        }).join("");
+
+        Array.prototype.forEach.call(document.querySelectorAll("[data-toggle]"), function (el) {
+          el.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var sym = el.getAttribute("data-toggle");
+            expanded = expanded === sym ? null : sym;
+            render();
+          });
+        });
+        Array.prototype.forEach.call(document.querySelectorAll("tr.data-row"), function (tr) {
+          tr.addEventListener("click", function () {
+            var sym = tr.getAttribute("data-sym");
+            expanded = expanded === sym ? null : sym;
+            render();
+          });
+        });
+      }
+
+      document.getElementById("search-input").addEventListener("input", function (e) {
+        search = e.target.value;
+        render();
+      });
+
+      render();
+    </script>
+  </body>
+</html>
